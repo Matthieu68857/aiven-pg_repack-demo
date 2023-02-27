@@ -92,9 +92,33 @@ Things to remember:
 - You need to use the exact same binary version as the one installed on your Postgres server
 - You need to have enough free disk space before executing pg_repack *(the process will create a table in the background containing all rows of your table, more details in the documentation)*
 
-Tips to use pg_repack: build your own docker image with the right version to use (1.4.7 for pg14 for example). Great example can be found on [this Github project](https://github.com/hartmut-co-uk/pg-repack-docker).
+***Tips to use pg_repack:** build your own docker image with the right version to use (1.4.7 for pg14 for example). Great example can be found on [this Github project](https://github.com/hartmut-co-uk/pg-repack-docker).*
 
-Let's start.
-https://docs.aiven.io/docs/products/postgresql/howto/use-pg-repack-extension
+Let's start! As stated in the [Aiven documentation](https://docs.aiven.io/docs/products/postgresql/howto/use-pg-repack-extension), you just have to install pg_repack extension on your Postgres server and then run pg_repack binary.
+
 ```
+CREATE EXTENSION pg_repack;
+```
+
+And finally:
+
+```
+pg_repack -h $PGHOST -p $PGPORT -U $PGUSER -k -d defaultdb --table=random_strings
+```
+
+During the process, you can try to add/update some data, it works!
+Once pg_repack is done, voilà, no more dead tuples:
+
+```
+select * from pgstattuple('random_strings');
+-[ RECORD 1 ]------+----------
+table_len          | 468115456
+tuple_count        | 400004
+tuple_len          | 422400156
+tuple_percent      | 90.23
+dead_tuple_count   | 0
+dead_tuple_len     | 0
+dead_tuple_percent | 0
+free_space         | 42515276
+free_percent       | 9.08
 ```
